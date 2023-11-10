@@ -1,0 +1,24 @@
+.container {
+    /* Center the container */
+    margin: 10px auto;
+    max-width: 80%; /* or your preferred max width */
+  
+    /* Add padding inside the container */
+    padding: 20px;
+  
+    /* Add a shadow to make the container "pop" */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+  
+    /* Optionally, add a border-radius for rounded corners */
+    border-radius: 8px;
+  
+    /* Other optional styles */
+    background: white; /* Give the container a background color */
+    transition: box-shadow 0.3s ease-in-out; /* Smooth transition for the shadow */
+  }
+  
+  /* Style for hover effect to increase the shadow */
+  .container:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.2);
+  }
+  

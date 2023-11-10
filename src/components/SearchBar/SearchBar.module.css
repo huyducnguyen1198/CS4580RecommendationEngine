@@ -1,0 +1,42 @@
+.searchBarContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem auto;
+}
+
+.searchInput {
+  box-sizing: border-box;
+  flex-grow: 1; /* Allow input to grow and take available space */
+  min-width: 150px; /* Minimum width to ensure input doesn't get too small */
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #cccccc;
+  border-right: none;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: #007bff;
+}
+
+.searchButton {
+  box-sizing: border-box;
+  height: 40px;
+  flex-shrink: 0; /* Prevent the button from shrinking */
+  width: 100px; /* Set a fixed width for the button */
+  padding: 10px;
+  border: 1px solid #cccccc;
+  background-color: #007bff;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.searchButton:hover {
+  background-color: #0056b3;
+}
