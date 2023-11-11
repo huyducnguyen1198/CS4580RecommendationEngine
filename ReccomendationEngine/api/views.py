@@ -78,7 +78,7 @@ def getMovie(request):
         movies = movieEngine.getDataset()
 
         if not any(k in body for k in required):
-            movies = movieEngine.getRandomMovies(movies, 50).to_dict('records')
+            movies = movieEngine.getRandomMovies(movies, 10).to_dict('records')
             return Response(movies, status=200)
         year = int(body['year']) if 'year' in body else None
         genres = body['genres'].split('|') if 'genres' in body else None
@@ -88,11 +88,12 @@ def getMovie(request):
         if title:
             movies = movieEngine.titlesimilarity(title, movies)
         if genres:
-            movies = movieEngine.genresimilarity(movies,genres )
+            movies = movieEngine.genresimilarity(movies,genres )[:50]
         if year:
             movies = movieEngine.getMovieRecByYear(movies,year )
 
-        movies = movies.to_dict(orient='records')
+        movies = movies[['title', 'genres' , 'imdbId', 'year']][:10].to_dict(orient='records')
+
         return Response(movies, status=200)
     except json.JSONDecodeError:
         return Response({'error': 'Invalid Json'}, status=400)

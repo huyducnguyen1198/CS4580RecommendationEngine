@@ -13,151 +13,299 @@ import MovieGenres from "../filter/GenreFilter"
 import Page from "../filter/pagination";
 // Sample data for movie cards
 const movies = [
-  {
-    title: "Inception",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1375666",
-    year: "2010",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1374444",
-    year: "2010",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1374444",
-    year: "2010",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1374444",
-    year: "2010",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1374444",
-    year: "2010",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1374444",
-    year: "2010",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1374444",
-    year: "2010",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbID: "tt1374444",
-    year: "2010",
-  },
-  // Add more movie objects here...
+    {
+        title: "Inception",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt13756f66",
+        year: "2010",
+        rated: "PG-13",
+    },
+    {
+        title: "BLablabla",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt1374f444",
+        year: "2010",
+        rated: "PG-13",
+    },
+    {
+        title: "BLablabla",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt1374v444",
+        year: "2010",
+        rated: "PG-13",
+    },
+    {
+        title: "BLablabla",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt13745444",
+        year: "2010",
+        rated: "PG-13",
+    },
+    {
+        title: "BLablabla",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt13744`44",
+        year: "2010",
+        rated: "PG-13",
+    },
+    {
+        title: "BLablabla",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt1374444",
+        year: "2010",
+        rated: "PG-13",
+
+    },
+    {
+        title: "BLablabla",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt13174444",
+        year: "2010",
+        rated: "PG-13",
+    },
+    {
+        title: "BLablabla",
+        genres: ["Action", "Adventure", "Sci-Fi"],
+        posterUrl: "https://example.com/poster1.jpg",
+        imdbId: "tt13743444",
+        year: "2010",
+        rated: "PG-13",
+    },
+    // Add more movie objects here...
 ];
 interface Movie {
-  title: string;
-  genres: string[];
-  posterUrl: string;
-  imdbID: string;
-  year: string;
+    title: string;
+    genres: string[];
+    posterUrl: string;
+    imdbId: string;
+    year: string;
+    rated: string;
+    plot: string;
 }
 
-const MovieCardContainer: React.FC = () => {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+interface MovieTitleProps {
+    searchTitle: string;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios({
-          method: "POST",
-          url: "http://localhost:8000/api/movies/",
-          data: {},
-        });
-        setData(res.data);
-        setLoading(false);
-      } catch (err) {
-        console.log(err);
-        setError("Failed to fetch data");
-        setLoading(false);
-      }
+interface queryData {
+    title?: string;
+    year?: string;
+    genres?: string;
+}
+
+/*************************/
+/* backend Movie props  */
+/*************************/
+interface MovieProps {
+    title: string;
+    genres: string;
+    posterUrl: string;
+    imdbId: string;
+    year: string;
+    rated: string;
+};
+
+const modifyMovie = async (movie: MovieProps): Promise<Movie> => {
+    try {
+        const padWithLeadingZeros = (s: string, targetLength: number): string => {
+            s = String(s)
+            while (s.length < targetLength) {
+                s = '0' + s;
+            }
+            return s;
+        };
+
+        const imdb = "tt" + padWithLeadingZeros(movie.imdbId, 7);
+        //console.log(imdb);
+        /*list of key
+            f451c5dd
+            4daa1e35
+            7cb0f304
+        */
+        const response = await fetch(`https://www.omdbapi.com/?i=${imdb}&apikey=7cb0f304`);
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        const movieData: any = await response.json();
+        const m: Movie = {
+            //from backend
+            imdbId: movie.imdbId,
+            title: movie.title,
+            genres: movie.genres.split("|"),
+            year: movie.year,
+            //from omdb
+            posterUrl: movieData.Poster,
+            rated: movieData.Rated,
+            plot: movieData.Plot,
+        }
+
+        return m;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
+    /***************************/
+    /* Fetch data from backend */
+    /***************************/
+    const [qdata, setData] = useState<MovieProps[]>([]);
+    /****************************/
+    /* complete movie list */
+    /****************************/
+    const [moviesList, setMovies] = useState<Movie[]>([]);
+
+
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Get the selected movie from the card
+    const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+    const handleCardClick = (movie: Movie) => {
+        setSelectedMovie(movie); // Update the selectedMovie state
     };
-    fetchData();
-  }, [selectedMovie]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+    /***************************/
+    /* Get the selected year */
+    /***************************/
+    const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+    const handleYearChange = (year: string) => {
+        setSelectedYear(year);
+    };
 
-  const handleCardClick = (movie: Movie) => {
-    console.log("Card clicked:", movie.title);
-    setSelectedMovie(movie); // Update the selectedMovie state
-  };
+    /***************************/
+    /* Get the selected genres */
+    /***************************/
+    const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+
+    const handleGenreChange = (genre: string, isChecked: boolean) => {
+
+        if (isChecked) {
+            setSelectedGenres([...selectedGenres, genre]);
+
+        } else {
+            setSelectedGenres(selectedGenres.filter((g) => g !== genre));
+
+        }
+    }
 
 
-  return (
-    <Row>
-      <Col md={2}>
-      
-      <MovieGenres/>
-      <YearDropdown />
-      </Col>
-      <Col md={10}>
-        <Container>
-          <Row>
-            {movies.map((movie, index) => (
-              <Col md={4} key={movie.imdbID}>
-                <Card
-                  className={styles.cardZoom}
-                  style={{ width: "18rem", margin: "10px", cursor: "pointer" }}
-                  onClick={() => handleCardClick(movie)}
-                >
-                  <Card.Img variant="top" src={movie.posterUrl} />
-                  <Card.Body>
-                    <Card.Title>{movie.title}</Card.Title>
-                    <Card.Text>
-                      <div>Genre: {movie.genres.join(", ")}</div>
-                      <div>IMDB ID: {movie.imdbID}</div>
-                      <div>Year: {movie.year}</div>
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-            
-          </Row>
-          <Row className="mt-5">
-            <Col md={6} className="mx-auto">
-            <Page/>
+    /***************************/
+    /* Fetch data from backend */
+    /***************************/
+    useEffect(() => {
+        const query: queryData = {};
+        if (searchTitle) {
+            query["title"] = searchTitle;
+        }
+        if (selectedYear) {
+            query["year"] = selectedYear;
+        }
+        if (selectedGenres.length > 0) {
+            query["genres"] = selectedGenres.join("|");
+        }
+        const fetchData = async () => {
+            try {
+                const res = await axios({
+                    method: "POST",
+                    url: "http://localhost:8000/api/movies/",
+                    data: query,
+                });
+                setData(res.data);
+                setLoading(false);
+            } catch (err) {
+                console.log(err);
+                setError("Failed to fetch data");
+                setLoading(false);
+            }
+
+        }
+        fetchData();
+    }, [searchTitle, selectedYear, selectedGenres]);
+
+
+    /***************************/
+    /* Fetch data from omdb */
+    /* and complete movie list */
+    /***************************/
+    useEffect(() => {
+        const moviesPro = qdata.map((movie) => modifyMovie(movie));
+
+        Promise.all(moviesPro)
+            .then((movies) => {
+                setMovies(movies);
+            })
+            .catch((err) => {
+                console.log(err);
+                setError("Failed to fetch data");
+                setLoading(false);
+            });
+
+    }, [qdata])
+
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+
+
+    return (
+        <Row>
+            <Col md={2}>
+
+                <MovieGenres onGenreChange={handleGenreChange} />
+                <YearDropdown onYearChange={handleYearChange} />
             </Col>
-          </Row>
-        </Container>
-      </Col>
-    </Row>
-  );
+            <Col md={10}>
+                <Container>
+                    <Row>
+                        {moviesList.map((movie, index) => (
+                            <a href={`/movie/${movie.imdbId}`}>
+                                <Col md={3} key={movie.imdbId}>
+                                    <Card
+                                        className={styles.cardZoom}
+                                        style={{ width: "15rem", margin: "5px", cursor: "pointer" }}
+                                        onClick={() => handleCardClick(movie)}
+                                    >
+                                        <Card.Img variant="top" src={movie.posterUrl} />
+                                        <Card.Body>
+                                            <Card.Title>{movie.title}</Card.Title>
+                                            <Card.Text>
+                                                <div>Genre: {movie.genres.join(", ")}</div>
+                                                <div>IMDB ID: {movie.imdbId}</div>
+                                                <div>Year: {movie.year}</div>
+                                            </Card.Text>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </a>
+                        ))}
+
+                    </Row>
+                    <Row className="mt-5">
+                        <Col md={6} className="mx-auto">
+                            <Page />
+                        </Col>
+                    </Row>
+                </Container>
+            </Col>
+        </Row>
+    );
 };
 // return (
 //   <div className={styles.container}>
@@ -167,7 +315,7 @@ const MovieCardContainer: React.FC = () => {
 //           title={movie.title}
 //           genres={movie.genres}
 //           posterUrl={movie.posterUrl}
-//           imdbID={movie.imdbID}
+//           imdbId={movie.imdbID}
 //           year={movie.year}
 //       />
 //     ))}

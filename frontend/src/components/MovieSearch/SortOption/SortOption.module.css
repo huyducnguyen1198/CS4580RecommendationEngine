@@ -1,0 +1,28 @@
+.tagOptions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .tagItem {
+    display: flex;
+  }
+  
+  .tagCheckbox {
+    display: none; /* Hide the actual checkbox */
+  }
+  
+  .tagLabel {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    padding: 5px 10px;
+    cursor: pointer;
+    user-select: none; /* Prevent text selection */
+  }
+  
+  .tagCheckbox:checked + .tagLabel {
+    background-color: #007bff;
+    color: white;
+  }
+  

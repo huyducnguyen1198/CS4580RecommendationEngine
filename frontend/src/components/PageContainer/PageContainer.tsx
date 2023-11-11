@@ -4,14 +4,17 @@ import './Container.css';
 import MovieCardContainer from "../MovieCard/MovieCardContainer";
 
 const PageContainer: React.FC = () => {
-  const handleSearch = (searchTerm: string) => {
-    console.log(searchTerm);
+
+  const [searchTerm, setSearchTerm] = React.useState<string>('');
+
+  const handleSearch = (query: string) => {
+    setSearchTerm(query);
   }
 
   return (
         <div style={{ textAlign: 'center' }}>
             <SearchBar onSearch={handleSearch} />
-            <MovieCardContainer />
+            <MovieCardContainer searchTitle={searchTerm} />
         </div>
     )
 };

@@ -228,7 +228,7 @@ def genresimilarity(df, genres=['Drama', 'Comedy'], p=.5):
     # Then sort it by similarity descending
     jaccard = df['genres'].apply(lambda x: jacard_similarity(x, genres))
     genresSortedBySimilarity = jaccard.sort_values(ascending=False)
-    # print(genresSortedBySimilarity[:10])
+    #print(df.loc[(genresSortedBySimilarity > p).index][:10])
     return df.loc[(genresSortedBySimilarity > p).index]
 
 def yearSimilarity(df, year, n=10):
