@@ -9,12 +9,10 @@ const PageContainer: React.FC = () => {
   }
 
   return (
-    <div className="container">
         <div style={{ textAlign: 'center' }}>
             <SearchBar onSearch={handleSearch} />
             <MovieCardContainer />
         </div>
-    </div>
     )
 };
 

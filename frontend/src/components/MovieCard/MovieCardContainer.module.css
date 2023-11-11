@@ -6,3 +6,13 @@
     justify-content: center; /* Center the grid items */
   }
   
+  .cardZoom:hover {
+    transform: scale(1.05); /* Adjust scale to desired zoom level */
+    transition: transform 0.3s ease-in-out; /* Smooth transition for the zoom effect */
+    z-index: 2; /* Ensure the card pops out over other elements */
+  }
+  
+  /* Optional: darken the card's background slightly on hover for better focus */
+  .cardZoom:hover .card-body {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
