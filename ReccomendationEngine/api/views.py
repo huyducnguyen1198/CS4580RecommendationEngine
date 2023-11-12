@@ -101,3 +101,39 @@ def getMovie(request):
         return Response({'error': str(e)}, status=500)
 
 
+@api_view(['POST'])
+def getMoviebyImdb(request):
+    try:
+        body = json.loads(request.body)
+        print("Here", body)
+        if 'imdbId' not in body:
+            return Response({'error': 'imdbId not found'}, status=400)
+        imdbId = int(body['imdbId'])
+        df = movieEngine.getDataset()
+
+        movie = df[['title', 'genres' , 'imdbId', 'year']][df['imdbId'] == imdbId].to_dict('records')
+        print(movie)
+        return Response(movie, status=200)
+    except json.JSONDecodeError:
+        return Response({'error': 'Invalid Json'}, status=400)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+def getMovieListbyImdb(request):
+    try:
+        body = json.loads(request.body)
+        print("Here", body)
+        if 'imdbId' not in body:
+            return Response({'error': 'imdbId not found'}, status=400)
+        imdbId = int(body['imdbId'])
+        df = movieEngine.getDataset()
+
+        movieList = movieEngine.getMovieRec(df, imdbId, 5).to_dict('records')
+
+        print(movieList)
+        return Response(movieList, status=200)
+    except json.JSONDecodeError:
+        return Response({'error': 'Invalid Json'}, status=400)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

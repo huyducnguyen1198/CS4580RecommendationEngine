@@ -275,11 +275,11 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
                 <Container>
                     <Row>
                         {moviesList.map((movie, index) => (
-                            <a href={`/movie/${movie.imdbId}`}>
-                                <Col md={3} key={movie.imdbId}>
+                                <Col md={4} key={movie.imdbId}>
+                                    <a href={`/movie/${movie.imdbId}`}>
                                     <Card
                                         className={styles.cardZoom}
-                                        style={{ width: "15rem", margin: "5px", cursor: "pointer" }}
+                                        style={{ width: "15rem",  margin: "2px", cursor: "pointer" }}
                                         onClick={() => handleCardClick(movie)}
                                     >
                                         <Card.Img variant="top" src={movie.posterUrl} />
@@ -292,8 +292,9 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
                                             </Card.Text>
                                         </Card.Body>
                                     </Card>
+                                    </a>
+
                                 </Col>
-                            </a>
                         ))}
 
                     </Row>
