@@ -11,6 +11,10 @@ import "../filter/YearDropDownBox"
 import YearDropdown from "../filter/YearDropDownBox";
 import MovieGenres from "../filter/GenreFilter"
 import Page from "../filter/pagination";
+
+
+const dbUrl = process.env.DATABASE_URL;
+console.log("URL:" + dbUrl);
 // Sample data for movie cards
 const movies = [
     {
