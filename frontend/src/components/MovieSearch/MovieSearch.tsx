@@ -9,6 +9,9 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import styles from "./MovieCardContainer.module.css";
+
+import {getMovieCluster} from './getMovieCluster';
+
 /************************/
 /* just some css styling */
 /************************/
@@ -68,7 +71,20 @@ function sortMovieList(movList: Movie[], sortOption: (keyof Movie)[], reverse: b
 /*******************************/
 
 const MoviePage: React.FC = () => {
+
+
+
+
+
+
     const { imdbID } = useParams();
+
+
+    const imdbList = getMovieCluster();
+    useEffect(() => {
+        console.log(imdbList);
+    }
+    , [imdbList]);
 
     const [sortOption, setSortOption] = React.useState<string[]>([]);
     const handleSortChange = (opt: string, isChecked: boolean) => {

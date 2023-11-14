@@ -12,6 +12,7 @@ import YearDropdown from "../filter/YearDropDownBox";
 import MovieGenres from "../filter/GenreFilter";
 import MovieSelected from "../filter/MovieSelected";
 import Page from "../filter/pagination";
+import ".";
 
 const dbUrl = process.env.DATABASE_URL;
 console.log("URL:" + dbUrl);
@@ -326,6 +327,7 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
       </Col>
     </Row>
   );
+
 };
 // return (
 //   <div className={styles.container}>
