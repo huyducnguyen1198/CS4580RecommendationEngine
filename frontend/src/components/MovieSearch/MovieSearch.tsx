@@ -30,13 +30,38 @@ interface Movie {
     year: string;
     jaccard : number;
     cosine : number;
-    jac_cos : number;
-
+    JacCosScore : number;
+    yearSim : number;
     //api data
     poster: string;
     rated: string|null;
 }
 
+/*******************************/
+/*    sort fucntion            */
+/*******************************/
+function sortMovieList(movList: Movie[], sortOption: (keyof Movie)[], reverse: boolean = true) {
+    const compare = (a:Movie, b:Movie) =>{
+        let comparison = 0;
+        sortOption.forEach((opt) => {
+            const valueA = a[opt];
+            const valueB = b[opt];
+            if(valueA === null || valueB === null){
+                return 0 ;
+            }
+
+            if (valueA > valueB) {
+                comparison = 1;
+            } else if (valueA < valueB) {
+                comparison = -1;
+            }
+        });
+
+        return reverse ? comparison * -1 : comparison;
+    
+    }
+    return movList.sort(compare);
+}
 
 /*******************************/
 /*    MoviePage component       */
@@ -54,7 +79,32 @@ const MoviePage: React.FC = () => {
         }
     }
     useEffect (() => {
-        console.log(sortOption);
+        const options:(keyof Movie)[] = []
+        if(sortOption.includes("year")){
+            options.push("yearSim");
+        }
+
+        if(sortOption.includes("title") && sortOption.includes("genres")){
+            options.push("JacCosScore");
+        }else{
+            if(sortOption.includes("title")){
+                options.push("cosine");
+            }
+            if(sortOption.includes("genres")){
+                options.push("jaccard");
+            }
+        }
+    
+        if (options.length === 0) {
+            
+            setCompl([...complOrg]);
+            console.log("no sort option");
+            console.log(complOrg);
+            return;
+        }
+        const sorted = sortMovieList([...compl], options)
+        setCompl(sorted);
+
     }, [sortOption]);
 
     /*******************************/
@@ -80,7 +130,7 @@ const MoviePage: React.FC = () => {
     }, [imdbID]);
 
     useEffect(() => {
-        console.log(movie);
+        //console.log(movie);
     }, [movie]);
 
     /************************************/
@@ -88,6 +138,8 @@ const MoviePage: React.FC = () => {
     /************************************/
     const [movieList, setMovieList] = React.useState<Movie[]>([]);
     const [compl, setCompl] = React.useState<Movie[]>([]);
+    const [complOrg, setComplOrg] = React.useState<Movie[]>([]);
+
     useEffect(() => {
         const fetchMovieList = async () => {
             try {
@@ -141,12 +193,15 @@ const MoviePage: React.FC = () => {
         });
         Promise.all(completeList).then((res) => {
             setCompl(res);
+            setComplOrg(res);
+
         });
 
     }, [movieList]);
 
-    console.log(compl);
-
+    useEffect(() => {
+        console.log(compl);
+    }, [compl]);
 
     // Fetch and display movie details using imdbID
     return (
@@ -170,8 +225,8 @@ const MoviePage: React.FC = () => {
             <Col md={10}>
                 <Container>
                     <Row>
-                    {movieList.map((movie, index) => (
-                        <Col md={4} key={movie.imdbId}>
+                    {compl.map((movie, index) => (
+                        <Col md={3} key={movie.imdbId}>
                         <Card
                             style={{ width: "15rem", margin: "2px", cursor: "pointer" }}
                         >

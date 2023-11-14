@@ -18,7 +18,7 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
         <Form.Group>
           <Form.Label>Sort Options:</Form.Label>
           <div className={styles.tagOptions}>
-            {['Title', 'Year', 'Plot'].map((option) => (
+            {['Title', 'Year', 'Genres'].map((option) => (
               <div key={option} className={styles.tagItem}>
                 <input
                   type="checkbox"
