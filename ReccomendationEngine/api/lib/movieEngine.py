@@ -209,8 +209,22 @@ def getMovieRec(df_rec, imdb,  n=10, random_state=0):
         denominator = len(row.union(ref))
         return numerator / denominator
 
+    # Get weighted_jaccard_similarity for past genres
+    # Using weight from getWeightForJaccard()(count of each genres in past movies)
+    # Then calculate weighted jaccard similarity using getJaccardSim()
+    # Finally, add weighted jaccard similarity to df_rec
+
     jaccard = df_rec['genres'].apply(lambda x: getJaccardSim(x, refGenres))
     df_rec['jaccard'] = jaccard
+
+    #year
+    # Get year similarity between reference movie and all movies
+    # Then add year similarity to df_rec
+    df_rec['yearDif'] = df_rec['year'].apply(lambda x: getYearDif(x, movie['year'].values[0]))
+    df_rec['yearSim'] = -(1 - df_rec['yearDif'] / df_rec['yearDif'].abs().max())
+    df_rec.drop('yearDif', axis=1, inplace=True)
+
+
 
     # Get movied based on tfidf-cosine similarity on past title
     # First get tfidf vectorizer of all titles
@@ -227,7 +241,7 @@ def getMovieRec(df_rec, imdb,  n=10, random_state=0):
 
     #  Combine jaccard and cosine similarity
     #  using 20% jaccard and 80% cosine
-    df_rec['JacCosScore'] = 0.2 * df_rec['jaccard'] + 0.8 * df_rec['cosine']
+    df_rec['JacCosScore'] = 0.4 * df_rec['jaccard'] + 0.6 * df_rec['cosine']
     return df_rec.sort_values(by='JacCosScore', ascending=False)[:n]
 
 
@@ -243,7 +257,7 @@ def getYearDif(year1, year2):
     :param year2:
     :return: difference
     '''
-    return abs(year1 - year2)
+    return year1 - year2
 def getMovieRecByYear(df_rec, yearRef=2020, n=10, random_state=0):
     '''
     Get recommendation based on past movies

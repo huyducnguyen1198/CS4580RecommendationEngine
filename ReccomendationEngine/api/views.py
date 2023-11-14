@@ -129,7 +129,7 @@ def getMovieListbyImdb(request):
         imdbId = int(body['imdbId'])
         df = movieEngine.getDataset()
 
-        movieList = movieEngine.getMovieRec(df, imdbId, 5).to_dict('records')
+        movieList = movieEngine.getMovieRec(df, imdbId, 10).to_dict('records')
 
         print(movieList)
         return Response(movieList, status=200)
