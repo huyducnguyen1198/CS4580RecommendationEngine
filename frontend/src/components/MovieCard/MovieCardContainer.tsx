@@ -12,78 +12,10 @@ import YearDropdown from "../filter/YearDropDownBox";
 import MovieGenres from "../filter/GenreFilter";
 import MovieSelected from "../filter/MovieSelected";
 import Page from "../filter/pagination";
-import ".";
 
-const dbUrl = process.env.DATABASE_URL;
-console.log("URL:" + dbUrl);
-// Sample data for movie cards
-const movies = [
-  {
-    title: "Inception",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt13756f66",
-    year: "2010",
-    rated: "PG-13",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt1374f444",
-    year: "2010",
-    rated: "PG-13",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt1374v444",
-    year: "2010",
-    rated: "PG-13",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt13745444",
-    year: "2010",
-    rated: "PG-13",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt13744`44",
-    year: "2010",
-    rated: "PG-13",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt1374444",
-    year: "2010",
-    rated: "PG-13",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt13174444",
-    year: "2010",
-    rated: "PG-13",
-  },
-  {
-    title: "BLablabla",
-    genres: ["Action", "Adventure", "Sci-Fi"],
-    posterUrl: "https://example.com/poster1.jpg",
-    imdbId: "tt13743444",
-    year: "2010",
-    rated: "PG-13",
-  },
-  // Add more movie objects here...
-];
+import sendData, { extractImdb } from "./SendData";
+import { useNavigate } from "react-router-dom";
+
 interface Movie {
   title: string;
   genres: string[];
@@ -134,7 +66,7 @@ const modifyMovie = async (movie: MovieProps): Promise<Movie> => {
             7cb0f304
         */
     const response = await fetch(
-      `https://www.omdbapi.com/?i=${imdb}&apikey=7cb0f304`
+      `https://www.omdbapi.com/?i=${imdb}&apikey=4daa1e35`
     );
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -265,20 +197,33 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
       });
   }, [qdata]);
 
-  if (loading) {
+
+  /***************************/
+  /* Submit movie button */
+  /***************************/
+  const navigate = useNavigate();
+
+  const handleSubmitSelectedMovies = () => {
+
+    const imdbList = extractImdb(selectedMovie);
+    console.log("IMDBLIST", imdbList);
+    
+    const data = new URLSearchParams({imdbList: imdbList.join(",")}).toString();
+
+    const url = `/movies?${data}`;
+
+    window.open(url, "_blank");
+};
+
+
+
+    if (loading) {
     return <div>Loading...</div>;
   }
 
   if (error) {
     return <div>Error: {error}</div>;
   }
-  /***************************/
-  /* Submit movie button */
-  /***************************/
-  const handleSubmitSelectedMovies = () => {
-    console.log('Submitting movies:', selectedMovie);
-  };
-
   return (
     <Row>
       <Col md={2}>
@@ -329,20 +274,5 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
   );
 
 };
-// return (
-//   <div className={styles.container}>
-//     {movies.map((movie, index) => (
-//       <MovieCard
-//           key={index}
-//           title={movie.title}
-//           genres={movie.genres}
-//           posterUrl={movie.posterUrl}
-//           imdbId={movie.imdbID}
-//           year={movie.year}
-//       />
-//     ))}
-//   </div>
-// );
-//};
 
 export default MovieCardContainer;

@@ -8,5 +8,6 @@ urlpatterns = [
     path('movies/genres/', getMoviebyGenre, name='genre-recommendation'),
     path('movies/year/', getMoviebyYear, name='year-recommendation'),
     path('movies/imdb/', getMoviebyImdb, name='imdb-recommendation'),
-    path('movies/listbyimdb/', getMovieListbyImdb, name='imdb-list-recommendation'),
+    path('movies/listbyimdbs/', getMovieRecByImdbList, name='imdb-list-recommendation'),
+
 ]

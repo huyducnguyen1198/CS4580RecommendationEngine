@@ -137,3 +137,20 @@ def getMovieListbyImdb(request):
         return Response({'error': 'Invalid Json'}, status=400)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+def getMovieRecByImdbList(request):
+    try:
+        body = json.loads(request.body)
+        print("Here", body)
+        if 'imdbList' not in body:
+            return Response({'error': 'imdbId not found'}, status=400)
+        imdbList = body['imdbList']
+        print(imdbList)
+        df = movieEngine.getDataset()
+        movieList = movieEngine.getMovieRecByImdbList(df, imdbList, 10).to_dict('records')
+        return Response(movieList, status=200)
+    except json.JSONDecodeError:
+        return Response({'error': 'Invalid Json'}, status=400)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

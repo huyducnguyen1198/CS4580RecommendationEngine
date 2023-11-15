@@ -273,6 +273,94 @@ def getMovieRecByYear(df_rec, yearRef=2020, n=10, random_state=0):
 
 ##########################################
 #           Get Recommendation           #
+#         Based on a list of IMDB        #
+##########################################
+def getWeightForJaccard(arr=[]):
+    '''
+    Get weight for jaccard distance based on past movies,
+    :param arr: array of list of genres [['Action', 'Children', etc.][][]]
+    :return: weight: dict of genres and its weight(count) index is the same as allGen [0,1,...]
+    '''
+    if len(arr) == 0:
+        return None
+    weight = {'Total': 0}
+    for m in arr:
+        for g in m:
+            if g in weight:
+                weight[g] += 1
+            else:
+                weight[g] = 1
+            weight['Total'] += 1
+    return weight
+def getMovieRecByImdbList(df_rec, imdbList,  n=10, random_state=0):
+    '''
+    Get recommendation based on a list of movies' imdbId
+    :param df_rec:
+    :param n: number of movies to return
+    :param random_state:
+    :return: knn movies to past movies
+    '''
+
+
+    # Load and check past movies
+    imdbList = [int(i) for i in imdbList]
+    ref_df = df_rec[df_rec['imdbId'].isin(imdbList)]
+    if ref_df is None:
+        return df_rec.sample(n, random_state=random_state)
+    weight = getWeightForJaccard(ref_df['genres'].map(lambda x: x.split('|')).tolist())
+    if weight is None:
+        return df_rec.sample(n, random_state=random_state)
+
+    # Remove past movies from df_rec
+    # so that it won't recommend past movies
+    df_rec = df_rec.drop(ref_df.index)
+
+    # Get weighted_jaccard_similarity for past genres
+    # Using weight from getWeightForJaccard()(count of each genres in past movies)
+    # Then calculate weighted jaccard similarity using getJaccardSim()
+    # Finally, add weighted jaccard similarity to df_rec
+    def getJaccardSim(row, weight):
+        ''' Get weighted jaccard similarity
+        :param row: row of dataframe
+        :param weight: dict of genres and its weight(count) index is the same as allGen {'Action': 1, 'Adventure': 2, etc.}
+        :return: weighted jaccard similarity
+        '''
+
+        row = row.split('|')
+        numerator = 0
+        denominator = weight['Total']
+        for g in row:
+            if g in weight:
+                numerator += weight[g]
+        return numerator / denominator
+
+    jaccard = df_rec['genres'].apply(lambda x: getJaccardSim(x, weight))
+    df_rec['jaccard'] = jaccard
+
+    # Get movied based on tfidf-cosine similarity on past title
+    # First get tfidf vectorizer of all titles
+    # Then combine all past titles into one string
+    #       and transform past titles into tfidf vector
+    # Final, Calculate cosine similarity between past titles
+    #       and all titles via tfidf vector
+    tfidf = TfidfVectorizer()
+    tfidf.fit(df_rec['title'])
+    '''pastDf_vector = tfidf.transform(pastDf['title'])
+    cosine_similarities = (cosine_similarity(df_vector, pastDf_vector) + 1)/2.0
+    df_rec['cosine'] = cosine_similarities.mean(axis=1)'''
+    pastTit = ' '.join(ref_df['title'].tolist())
+    pastTit_vector = tfidf.transform([pastTit])
+
+    df_vector = tfidf.transform(df_rec['title'])
+    df_rec['cosine'] = cosine_similarity(df_vector, pastTit_vector)
+
+    #  Combine jaccard and cosine similarity
+    #  using 20% jaccard and 80% cosine
+    df_rec['JacCosScore'] = 0.2 * df_rec['jaccard'] + 0.8 * df_rec['cosine']
+    return df_rec.sort_values(by='JacCosScore', ascending=False)[:n]
+
+##########################################
+#           Get Recommendation           #
 #           randomly                    #
 ##########################################
 def getRandomMovies(df, n=10):
@@ -287,5 +375,3 @@ def getDataset():
     df = extractYear(df)
     #df, allGen = transformGenre(df)
     return df
-
-

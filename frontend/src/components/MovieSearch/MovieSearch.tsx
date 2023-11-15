@@ -1,6 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PageContainer from './PageContainer';
 import SortOption from './SortOption/SortOption';
 import axios from 'axios';
@@ -9,6 +8,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import styles from "./MovieCardContainer.module.css";
+import { useLocation } from 'react-router-dom';
 
 import {getMovieCluster} from './getMovieCluster';
 
@@ -72,19 +72,34 @@ function sortMovieList(movList: Movie[], sortOption: (keyof Movie)[], reverse: b
 
 const MoviePage: React.FC = () => {
 
+    const [loading, setLoading] = useState<boolean>(true);
 
 
 
+    /************************************/
+    /*   Fetch movie list by imdbIDList */
+    /************************************/
+    const [imdbList, setImdbList] = React.useState<string[]>([]);
+    //const imdbList = getMovieCluster();
+    
+    const location = useLocation();
 
-
-    const { imdbID } = useParams();
-
-
-    const imdbList = getMovieCluster();
     useEffect(() => {
-        console.log(imdbList);
-    }
-    , [imdbList]);
+
+        const queryParams = new URLSearchParams(location.search);
+        const imdbs = queryParams.get('imdbList');
+    
+        if(imdbs === undefined || imdbs === null ){
+            return;
+        }
+    
+        setImdbList(imdbs.split(','));
+    }, [location]);
+    
+
+    /************************************/
+    /*   Sort option                    */
+    /************************************/
 
     const [sortOption, setSortOption] = React.useState<string[]>([]);
     const handleSortChange = (opt: string, isChecked: boolean) => {
@@ -123,34 +138,9 @@ const MoviePage: React.FC = () => {
 
     }, [sortOption]);
 
-    /*******************************/
-    /*       Fetch movie by imdbID */
-    /*******************************/
-    const [movie, setMovie] = React.useState<Movie | null>(null);
-    useEffect(() => {
-        const fetchMovie = async () => {
-            try {
-                const res = await axios({
-                    method: "POST",
-                    url: "http://localhost:8000/api/movies/imdb/",
-                    data: { imdbId: imdbID },
-                });
-                const json = await res.data;
-                setMovie(json[0]);
-            } catch (error) {
-                console.log(error);
-                throw error;
-            }
-        };
-        fetchMovie();
-    }, [imdbID]);
-
-    useEffect(() => {
-        //console.log(movie);
-    }, [movie]);
 
     /************************************/
-    /*       Fetch movie list by imdbID */
+    /*   Fetch movie list by imdbIDList */
     /************************************/
     const [movieList, setMovieList] = React.useState<Movie[]>([]);
     const [compl, setCompl] = React.useState<Movie[]>([]);
@@ -161,8 +151,8 @@ const MoviePage: React.FC = () => {
             try {
                 const res = await axios({
                     method: "POST",
-                    url: "http://localhost:8000/api/movies/listbyimdb/",
-                    data: { imdbId: imdbID },
+                    url: "http://localhost:8000/api/movies/listbyimdbs/",
+                    data: { imdbList: imdbList },
                 });
                 const json = await res.data;
                 setMovieList(json);
@@ -173,7 +163,7 @@ const MoviePage: React.FC = () => {
         };
 
         fetchMovieList();
-    }, [imdbID]);
+    }, [imdbList]);
 
     useEffect(() => {
         const completeMovieList = async (mov: Movie) => {
@@ -192,7 +182,7 @@ const MoviePage: React.FC = () => {
                 4daa1e35
                 7cb0f304
             */
-            const response = await fetch(`https://www.omdbapi.com/?i=${imdb}&apikey=7cb0f304`);
+            const response = await fetch(`https://www.omdbapi.com/?i=${imdb}&apikey=f451c5dd`);
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
@@ -216,26 +206,17 @@ const MoviePage: React.FC = () => {
     }, [movieList]);
 
     useEffect(() => {
-        console.log(compl);
+        //console.log(compl);
+        setLoading(false);
     }, [compl]);
+
 
     // Fetch and display movie details using imdbID
     return (
         <PageContainer>
             <div style={movieDetailsStyle}>
-                    <h1>Movie Details</h1>
-            <p>
-                <strong>IMDb ID:</strong> {imdbID}
-            </p>
-            <p>
-                <strong>Title:</strong> {movie?.title}
-            </p>
-            <p>
-                <strong>Genres:</strong> {movie?.genres}
-            </p>
-            <p>
-                <strong>Year:</strong> {movie?.year}
-            </p>
+                    <h1>Movie Recommendation based selected Movies</h1>
+            
                 <SortOption onSortChange={handleSortChange} />
             </div>
             <Col md={10}>

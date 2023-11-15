@@ -1,8 +1,21 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { Link, useNavigate } from 'react-router-dom';
 
+interface Movie {
+    title: string;
+    genres: string[];
+    posterUrl: string;
+    imdbId: string;
+    year: string;
+    rated: string;
+    plot: string;
+  }
 
-export function sendData(data:string[]){
+export function extractImdb(movieList: Movie[]){
+    const imdbList = movieList.map((movie) => movie.imdbId);
+    return imdbList;
+}
+export default function sendData(data:string[]){
 
     const navigate = useNavigate();
     

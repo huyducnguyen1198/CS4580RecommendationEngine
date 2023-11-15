@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import { Card, ListGroup, Container, Button } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
@@ -18,6 +18,25 @@ interface MovieSelectedProps {
     onSubmit: () => void;
   }
 const MovieSelected: React.FC<MovieSelectedProps> = ({ movieList , onRemove, onSubmit }) => {
+
+  //check if movie list is empty alert and create alertHtml
+  const [showAlert, setShowAlert] = React.useState(false);
+  const alertHtml = (
+    <div className="alert alert-danger" role="alert">
+      Please select at least one movie!
+    </div>
+  );
+
+
+  const onSubmitCheck = () => {
+    if (movieList.length === 0) {
+      setShowAlert(true)
+    } else {
+      setShowAlert(false)
+      onSubmit();
+    }
+  }
+
   return (
     <Container>
       <h3>Selected Movies:</h3>
@@ -36,7 +55,8 @@ const MovieSelected: React.FC<MovieSelectedProps> = ({ movieList , onRemove, onS
           </Card.Header>
         </Card>
       ))}
-       <Button variant="primary" onClick={onSubmit} className="mt-3">
+      {showAlert && alertHtml}
+       <Button variant="primary" onClick={onSubmitCheck} className="mt-3">
         Submit Movies
       </Button>
     </Container>
