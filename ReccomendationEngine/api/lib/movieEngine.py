@@ -344,15 +344,29 @@ def getMovieRecByImdbList(df_rec, imdbList,  n=10, random_state=0):
     # Final, Calculate cosine similarity between past titles
     #       and all titles via tfidf vector
     tfidf = TfidfVectorizer()
-    tfidf.fit(df_rec['title'])
+    tfidf.fit(df_rec['plot'])
     '''pastDf_vector = tfidf.transform(pastDf['title'])
     cosine_similarities = (cosine_similarity(df_vector, pastDf_vector) + 1)/2.0
     df_rec['cosine'] = cosine_similarities.mean(axis=1)'''
-    pastTit = ' '.join(ref_df['title'].tolist())
+    pastTit = ' '.join(ref_df['plot'].tolist())
     pastTit_vector = tfidf.transform([pastTit])
 
-    df_vector = tfidf.transform(df_rec['title'])
+    df_vector = tfidf.transform(df_rec['plot'])
     df_rec['cosine'] = cosine_similarity(df_vector, pastTit_vector)
+
+    # Use Levnshtein distance to get similarity between ref titles and all titles
+    # Then add it to df_rec
+    def getLavenshteinSim(row, refTitles):
+        ''' Get similarity between past titles and all titles
+        :param row: row of dataframe
+        :param pastTitles: string of past titles
+        :return: similarity
+        '''
+        return lev.ratio(row, refTitles)
+
+    lavenshtein = df_rec['title'].apply(lambda x: getLavenshteinSim(x, pastTit))
+    df_rec['lavenshtein'] = lavenshtein
+
 
     #  Combine jaccard and cosine similarity
     #  using 20% jaccard and 80% cosine
@@ -371,7 +385,32 @@ def getRandomMovies(df, n=10):
 ##########################################
 
 def getDataset():
-    df = pd.read_csv('api/lib/movies.csv')
+    df = pd.read_csv('api/lib/moviesWPlot.csv')
     df = extractYear(df)
     #df, allGen = transformGenre(df)
     return df
+
+'''
+df = pd.read_csv('movies_description.csv')
+df['imdb_id'] = df['imdb_id'].astype(str)
+
+# Remove tt from imdb_id and remove rows that have n in imdb_id
+df['imdb_id'] = df['imdb_id'].apply(lambda x: x[2:])
+df.drop(df[df['imdb_id'].apply(lambda x: 'n' in x)].index, inplace=True)
+df.drop(df[df['imdb_id'].map(lambda x: len(x) < 2)].index, inplace=True)
+
+df['imdb_id'] = df['imdb_id'].astype(int)
+
+print(df.head())
+
+df_t = pd.read_csv('movies.csv')
+
+df_m = pd.merge(df_t, df, left_on='imdbId', right_on='imdb_id')
+df_m.drop(['original_title'], inplace=True, axis=1)
+df_m.drop(['imdb_id'], inplace=True, axis=1)
+df_m.rename(columns={'overview': 'plot'}, inplace=True)
+df_m.dropna(inplace=True)
+
+df_m.to_csv('moviesWPlot.csv', index=False)
+
+print(df_m.head())'''

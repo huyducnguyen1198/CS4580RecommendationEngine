@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import PageContainer from './PageContainer';
-import SortOption from './SortOption/SortOption';
+import SortOption, { WeightsType} from './SortOption/SortOption';
 import axios from 'axios';
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
@@ -35,6 +35,8 @@ interface Movie {
     cosine : number;
     JacCosScore : number;
     yearSim : number;
+    lavenshtein : number;
+    sortScore : number|0;
     //api data
     poster: string;
     rated: string|null;
@@ -102,7 +104,7 @@ const MoviePage: React.FC = () => {
     /************************************/
 
     const [sortOption, setSortOption] = React.useState<string[]>([]);
-    const handleSortChange = (opt: string, isChecked: boolean) => {
+    /*const handleSortChange = (opt: string, isChecked: boolean) => {
         if (isChecked) {
             setSortOption([...sortOption, opt]);
         } else {
@@ -111,17 +113,17 @@ const MoviePage: React.FC = () => {
     }
     useEffect (() => {
         const options:(keyof Movie)[] = []
-        if(sortOption.includes("year")){
-            options.push("yearSim");
+        if(sortOption.includes("Plot")){
+            options.push("cosine");
         }
 
         if(sortOption.includes("title") && sortOption.includes("genres")){
             options.push("JacCosScore");
         }else{
-            if(sortOption.includes("title")){
-                options.push("cosine");
+            if(sortOption.includes("Title")){
+                options.push("lavenshtein");
             }
-            if(sortOption.includes("genres")){
+            if(sortOption.includes("Genres")){
                 options.push("jaccard");
             }
         }
@@ -136,14 +138,25 @@ const MoviePage: React.FC = () => {
         const sorted = sortMovieList([...compl], options)
         setCompl(sorted);
 
-    }, [sortOption]);
+    }, [sortOption]);*/
+    const [compl, setCompl] = React.useState<Movie[]>([]);
+
+    const handleSortChange1 = ( weights: WeightsType) => {
+        const updatedMovies = compl.map(movie => ({
+            ...movie,
+            sortScore: movie.cosine * weights.Plot + movie.lavenshtein * weights.Title + movie.JacCosScore * weights.Genres
+        }));
+        const sorted = sortMovieList([...updatedMovies], ["sortScore"], true);
+        setCompl(sorted);
+    }
+
+    
 
 
     /************************************/
     /*   Fetch movie list by imdbIDList */
     /************************************/
     const [movieList, setMovieList] = React.useState<Movie[]>([]);
-    const [compl, setCompl] = React.useState<Movie[]>([]);
     const [complOrg, setComplOrg] = React.useState<Movie[]>([]);
 
     useEffect(() => {
@@ -217,7 +230,7 @@ const MoviePage: React.FC = () => {
             <div style={movieDetailsStyle}>
                     <h1>Movie Recommendation based selected Movies</h1>
             
-                <SortOption onSortChange={handleSortChange} />
+                <SortOption onSortChange={handleSortChange1} />
             </div>
             <Col md={10}>
                 <Container>
