@@ -1,8 +1,14 @@
+import pickle
+
 import Levenshtein as lev
 import numpy as np
 import pandas as pd
+from scipy.sparse import hstack
+from sklearn.cluster import KMeans
+from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import StandardScaler
 
 pd.set_option('expand_frame_repr', None)
 pd.set_option('display.max_columns', None)
@@ -373,6 +379,137 @@ def getMovieRecByImdbList(df_rec, imdbList,  n=10, random_state=0):
     df_rec['JacCosScore'] = 0.2 * df_rec['jaccard'] + 0.8 * df_rec['cosine']
     return df_rec.sort_values(by='JacCosScore', ascending=False)[:n]
 
+
+##########################################
+#           Get Recommendation           #
+#           using k-mean                 #
+##########################################
+
+def getGenreDummies(df):
+    '''
+    Get dummy variables for genres
+    :param df:
+    :return: df with dummy variables
+    '''
+    genre = df['genres'].map(lambda x: x.split('|'))
+    allGen = np.unique(np.concatenate(genre.values))
+    allGen = allGen.tolist()
+    allGen.remove('(no genres listed)')
+    def mapGenre(row):
+        return [1 if g in row else 0 for g in allGen]
+    mappedGen = genre.map(mapGenre)
+    returnGen = mappedGen
+    ##binary array to dataframe with column names
+    mappedGen = mappedGen.apply(pd.Series)
+    mappedGen.columns = allGen
+    df = df.join(mappedGen)
+    return df, allGen, returnGen
+
+def titleSave(df):
+    '''
+    Save tfidf vectorizer and truncated svd for title
+    :param df:
+    :return:
+    '''
+
+
+    # wrangle plot into tfidf vector
+    # Initialize TF-IDF Vectorizer and fit it to the 'plot' column
+    tfidf = TfidfVectorizer()
+    tfidf_fit = tfidf.fit(df['plot'])
+
+    # Transform the 'title' column
+    tfidf_titles = tfidf_fit.transform(df['title'])
+
+    # Apply Truncated SVD for dimensionality reduction on the TF-IDF data
+    svd = TruncatedSVD(n_components=20)  # Adjust n_components as needed
+    truncated_tfidf_titles = svd.fit_transform(tfidf_titles)
+
+    # Save the truncated TF-IDF data to a file
+    with open('truncated_tfidf_titles.pkl', 'wb') as file:
+        pickle.dump(truncated_tfidf_titles, file)
+
+
+    # wrangle gneres int
+    titGenWeight = np.concatenate((truncated_tfidf_titles, df[allGen].values), axis=1)
+    titGenWeight = StandardScaler().fit_transform(titGenWeight)
+
+    with open('title_genres_weight.pkl', 'wb') as file:
+        pickle.dump(titGenWeight, file)
+
+
+    df.to_csv('moviesWPlot.csv', index=False)
+
+
+
+def loadTitle():
+    '''
+    load df, truncated tfidf, and title_genres_weight
+    :return:
+    '''
+    # To load the truncated TF-IDF data back
+    with open('api/lib/truncated_tfidf_titles.pkl', 'rb') as file:
+        loaded_truncated_tfidf_titles = pickle.load(file)
+
+    # to load the title_genres_weight back
+    with open('api/lib/title_genres_weight.pkl', 'rb') as file:
+        loaded_title_genres_weight = pickle.load(file)
+
+    df = pd.read_csv('api/lib/moviesWPlot.csv')
+
+    return df, loaded_truncated_tfidf_titles, loaded_title_genres_weight
+
+
+
+def getMovieRecByKmean(imdbs=[], option=['title'],k=10,  n=10, random_state=0):
+    '''
+    Get recommendation based on a reference movie using k-mean
+    :param df_rec:
+    :param imdb:
+    :param n:
+    :param random_state:
+    :return:
+    '''
+
+    # wrangle gneres into dummy variables
+
+
+    imdbs = [int(i) for i in imdbs]
+    df, titleWeight, titGenWeight = loadTitle()
+
+
+    # get reference movies
+    if len(imdbs) == 0:
+        return df.sample(n, random_state=random_state)
+
+    # define kmeans and fit to genres
+    kmeans = KMeans(n_clusters=k, random_state=random_state)
+    #use cluster for all cases
+    if 'title' in option and 'genres' in option:
+        print('both title and genres')
+        kmeans.fit(titGenWeight)
+        df['cluster'] = kmeans.predict(titGenWeight)
+    elif 'title' in option:
+        print('title')
+        kmeans.fit(titleWeight)
+        df['cluster'] = kmeans.predict(titleWeight)
+    elif 'genres' in option:
+        print('genres')
+        kmeans.fit(df[allGen])
+        df['cluster'] = kmeans.predict(df[allGen])
+    # get cluster of reference movies
+    ref_cluster = df[df['imdbId'].isin(imdbs)]['cluster'].unique()
+
+    # get movies in the same cluster as reference movies
+    df_rec = df[df['cluster'].isin(ref_cluster)]
+
+
+    # remove reference movies from df_rec
+    df_rec = df_rec[df_rec['imdbId'].isin(imdbs) == False]
+
+
+    return df_rec.sample(n, random_state=random_state)
+
 ##########################################
 #           Get Recommendation           #
 #           randomly                    #
@@ -386,7 +523,6 @@ def getRandomMovies(df, n=10):
 
 def getDataset():
     df = pd.read_csv('api/lib/moviesWPlot.csv')
-    df = extractYear(df)
     #df, allGen = transformGenre(df)
     return df
 
@@ -414,3 +550,8 @@ df_m.dropna(inplace=True)
 df_m.to_csv('moviesWPlot.csv', index=False)
 
 print(df_m.head())'''
+
+
+
+
+

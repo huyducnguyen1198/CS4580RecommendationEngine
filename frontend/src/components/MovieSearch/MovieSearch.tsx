@@ -165,7 +165,11 @@ const MoviePage: React.FC = () => {
                 const res = await axios({
                     method: "POST",
                     url: "http://localhost:8000/api/movies/listbyimdbs/",
-                    data: { imdbList: imdbList },
+                    data: { 
+                        imdbList: imdbList,
+                        options: ['title', 'genres'],
+                        k: 10
+                     },
                 });
                 const json = await res.data;
                 setMovieList(json);

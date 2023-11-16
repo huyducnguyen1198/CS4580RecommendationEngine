@@ -79,6 +79,7 @@ def getMovie(request):
 
         if not any(k in body for k in required):
             movies = movieEngine.getRandomMovies(movies, 10).to_dict('records')
+
             return Response(movies, status=200)
         year = int(body['year']) if 'year' in body else None
         genres = body['genres'].split('|') if 'genres' in body else None
@@ -145,10 +146,17 @@ def getMovieRecByImdbList(request):
         print("Here", body)
         if 'imdbList' not in body:
             return Response({'error': 'imdbId not found'}, status=400)
+        if 'k' not in body:
+            return Response({'error': 'k not found'}, status=400)
+        if 'options' not in body:
+            return Response({'error': 'options not found'}, status=400)
+
         imdbList = body['imdbList']
-        print(imdbList)
+        options = body['options']
+        k = int(body['k'])
+        print(k, imdbList)
         df = movieEngine.getDataset()
-        movieList = movieEngine.getMovieRecByImdbList(df, imdbList, 10).to_dict('records')
+        movieList = movieEngine.getMovieRecByKmean(imdbList, options,10).to_dict('records')
         return Response(movieList, status=200)
     except json.JSONDecodeError:
         return Response({'error': 'Invalid Json'}, status=400)
