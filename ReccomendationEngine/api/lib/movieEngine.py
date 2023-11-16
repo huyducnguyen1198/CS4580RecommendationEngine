@@ -298,7 +298,7 @@ def getWeightForJaccard(arr=[]):
                 weight[g] = 1
             weight['Total'] += 1
     return weight
-def getMovieRecByImdbList(df_rec, imdbList,  n=10, random_state=0):
+def getMovieWWeights(df_rec, imdbList,  n=10, random_state=0):
     '''
     Get recommendation based on a list of movies' imdbId
     :param df_rec:
@@ -307,11 +307,10 @@ def getMovieRecByImdbList(df_rec, imdbList,  n=10, random_state=0):
     :return: knn movies to past movies
     '''
 
-
     # Load and check past movies
     imdbList = [int(i) for i in imdbList]
     ref_df = df_rec[df_rec['imdbId'].isin(imdbList)]
-    if ref_df is None:
+    if len(imdbList) == 0:
         return df_rec.sample(n, random_state=random_state)
     weight = getWeightForJaccard(ref_df['genres'].map(lambda x: x.split('|')).tolist())
     if weight is None:
@@ -377,6 +376,7 @@ def getMovieRecByImdbList(df_rec, imdbList,  n=10, random_state=0):
     #  Combine jaccard and cosine similarity
     #  using 20% jaccard and 80% cosine
     df_rec['JacCosScore'] = 0.2 * df_rec['jaccard'] + 0.8 * df_rec['cosine']
+    print(df_rec)
     return df_rec.sort_values(by='JacCosScore', ascending=False)[:n]
 
 
@@ -460,7 +460,28 @@ def loadTitle():
     return df, loaded_truncated_tfidf_titles, loaded_title_genres_weight
 
 
+def getJaccardSim(row, weight):
+    ''' Get weighted jaccard similarity
+    :param row: row of dataframe
+    :param weight: dict of genres and its weight(count) index is the same as allGen {'Action': 1, 'Adventure': 2, etc.}
+    :return: weighted jaccard similarity
+    '''
 
+    row = row.split('|')
+    numerator = 0
+    denominator = weight['Total']
+    for g in row:
+        if g in weight:
+            numerator += weight[g]
+    return numerator / denominator
+
+def getLavenshteinSim(row, refTitles):
+    ''' Get similarity between past titles and all titles
+    :param row: row of dataframe
+    :param pastTitles: string of past titles
+    :return: similarity
+    '''
+    return lev.ratio(row, refTitles)
 def getMovieRecByKmean(imdbs=[], option=['title'],k=10,  n=10, random_state=0):
     '''
     Get recommendation based on a reference movie using k-mean
@@ -475,8 +496,9 @@ def getMovieRecByKmean(imdbs=[], option=['title'],k=10,  n=10, random_state=0):
 
 
     imdbs = [int(i) for i in imdbs]
-    df, titleWeight, titGenWeight = loadTitle()
 
+
+    df, titleWeight, titGenWeight = loadTitle()
 
     # get reference movies
     if len(imdbs) == 0:
@@ -504,11 +526,39 @@ def getMovieRecByKmean(imdbs=[], option=['title'],k=10,  n=10, random_state=0):
     df_rec = df[df['cluster'].isin(ref_cluster)]
 
 
+    # get weighted jaccard similarity
+    ref_df = df_rec[df_rec['imdbId'].isin(imdbs)]
+
     # remove reference movies from df_rec
     df_rec = df_rec[df_rec['imdbId'].isin(imdbs) == False]
 
 
-    return df_rec.sample(n, random_state=random_state)
+    ####################################
+    # Get jaccard, cosine, lavenshtein #
+    ####################################
+
+    # get weighted jaccard similarity
+    weight = getWeightForJaccard(ref_df['genres'].map(lambda x: x.split('|')).tolist())
+    jaccard = df_rec['genres'].apply(lambda x: getJaccardSim(x, weight))
+    df_rec['jaccard'] = jaccard
+
+    # get cosine similarity
+    tfidf = TfidfVectorizer()
+    tfidf.fit(df_rec['plot'])
+    pastTit = ' '.join(ref_df['plot'].tolist())
+    pastTit_vector = tfidf.transform([pastTit])
+    df_vector = tfidf.transform(df_rec['plot'])
+    df_rec['cosine'] = cosine_similarity(df_vector, pastTit_vector)
+
+
+    # get lavenshtein similarity
+    lavenshtein = df_rec['title'].apply(lambda x: getLavenshteinSim(x, pastTit))
+    df_rec['lavenshtein'] = lavenshtein
+
+    # combine jaccard, cosine, lavenshtein
+    df_rec['JacCosScore'] = 1 * df_rec['jaccard'] + 1 * df_rec['cosine'] + 1 * df_rec['lavenshtein']
+    df_rec = df_rec.sort_values(by='JacCosScore', ascending=False)
+    return df_rec.drop(allGen, axis=1).sample(n, random_state=random_state)
 
 ##########################################
 #           Get Recommendation           #
