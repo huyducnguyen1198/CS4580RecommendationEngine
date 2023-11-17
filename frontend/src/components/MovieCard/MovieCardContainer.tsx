@@ -11,6 +11,7 @@ import "../filter/YearDropDownBox";
 import YearDropdown from "../filter/YearDropDownBox";
 import MovieGenres from "../filter/GenreFilter";
 import MovieSelected from "../filter/MovieSelected";
+import ClusteringOption from "../ClusteringOption/ClusteringOption";
 import Page from "../filter/pagination";
 
 import sendData, { extractImdb } from "./SendData";
@@ -46,6 +47,14 @@ interface MovieProps {
   imdbId: string;
   year: string;
   rated: string;
+}
+
+/*************************/
+/* clustering Option props  */
+/*************************/
+interface clusteringOptionProps {
+  option: string;
+  isChecked: boolean;
 }
 
 const modifyMovie = async (movie: MovieProps): Promise<Movie> => {
@@ -104,6 +113,7 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [option, setOption] = useState<clusteringOptionProps[]>([]);
 
   // Get the selected movie from the card
   const [selectedMovie, setSelectedMovie] = useState<Movie[]>([]);
@@ -197,6 +207,11 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
       });
   }, [qdata]);
 
+  /***************************/
+  /* Clustering Options */
+  /***************************/
+  const [clusteringOptions, setClusteringOptions] = useState<string[]>([]);
+
 
   /***************************/
   /* Submit movie button */
@@ -268,6 +283,7 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
       </Col>
 
       <Col md={2}>
+      <ClusteringOption />
       <MovieSelected movieList={selectedMovie} onRemove={handleRemoveMovie} onSubmit={handleSubmitSelectedMovies}/>
       </Col>
     </Row>
