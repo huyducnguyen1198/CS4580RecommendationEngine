@@ -2,18 +2,21 @@
 import React, { useState } from "react";
 import styles from "./SearchBar.module.css"; // Import the CSS module
 import { Button, Form, Row, Col, Container } from "react-bootstrap";
-/*
-interface clusteringOptionProps {
-  onSubmit: (option: string[], isChecked: boolean[], Knumber: number) => void;
-}
-*/
 
-//const ClusteringOption: React.FC<clusteringOptionProps> = ({ onSubmit }) => {
-const ClusteringOption: React.FC = () => {
-  const [option, setOption] = useState<string>("");
+interface clusteringOptionProps {
+  onChange: (option: string[], k: number) => void;
+}
+
+
+const ClusteringOption: React.FC<clusteringOptionProps> = ({ onChange }) => {
+// const ClusteringOption: React.FC = () => {
+  const [option, setOption] = useState<string[]>([]);
+  const [k, setK] = useState<number>(0);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setOption(event.target.value);
+    const { value } = event.target;
+    setK(Number(value));
+    onChange(option, k);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -23,7 +26,7 @@ const ClusteringOption: React.FC = () => {
   return (
     <Container>
     <h4>Clustering Options:</h4>
-    <Form onSubmit={handleSubmit} className="mt-1 mb-1">
+    <Form className="mt-1 mb-1">
       <Row className="justify-content-md-center">
         <Col md="auto">
             <Form.Check
@@ -32,6 +35,15 @@ const ClusteringOption: React.FC = () => {
             id="inlineFormCheck"
             label="Title"
             className="mr-sm-2"
+            onChange={(e) => {
+              if (e.target.checked) {
+                setOption([...option, "title"]);
+              } else {
+                setOption(option.filter((item) => item !== "title"));
+              }
+              onChange(option, k);
+            
+            }}
             />
             <Form.Check
             inline
@@ -39,6 +51,14 @@ const ClusteringOption: React.FC = () => {
             id="inlineFormCheck"
             label="Genre"
             className="mr-sm-2"
+            onChange={(e) => {
+              if (e.target.checked) {
+                setOption([...option, "genre"]);
+              } else {
+                setOption(option.filter((item) => item !== "genre"));
+              }
+              onChange(option, k);
+            }}
             />
             </Col>
         <Row className="justify-content-md-center">

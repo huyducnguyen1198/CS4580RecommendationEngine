@@ -210,8 +210,37 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
   /***************************/
   /* Clustering Options */
   /***************************/
-  const [clusteringOptions, setClusteringOptions] = useState<string[]>([]);
+  const [k, setK] = useState<number>(0);
+  const [clusterOption, setClusterOption] = useState<string[]>([]);
+  const handleClusterChange = (option: string[], k: number) => {
+    setClusterOption(option);
+    setK(k);
+  }
 
+  useEffect(() => {
+    const fetchMovieList = async () => {
+      if(moviesList.length === 0) return;
+        try {
+            const res = await axios({
+                method: "POST",
+                url: "http://localhost:8000/api/movies/listbyimdbs/",
+                data: { 
+                    imdbList: moviesList.map((movie) => movie.imdbId),
+                    options: clusterOption,
+                    k: k
+                 },
+            });
+            const json = await res.data;
+            console.log(json);
+            setData(json);
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
+
+    fetchMovieList();
+}, [option, k]);
 
   /***************************/
   /* Submit movie button */
@@ -283,7 +312,7 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
       </Col>
 
       <Col md={2}>
-      <ClusteringOption />
+      <ClusteringOption onChange={handleClusterChange}/>
       <MovieSelected movieList={selectedMovie} onRemove={handleRemoveMovie} onSubmit={handleSubmitSelectedMovies}/>
       </Col>
     </Row>
