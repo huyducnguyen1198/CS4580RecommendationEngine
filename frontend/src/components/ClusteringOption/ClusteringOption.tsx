@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./SearchBar.module.css"; // Import the CSS module
 import { Button, Form, Row, Col, Container } from "react-bootstrap";
 
@@ -13,16 +13,49 @@ const ClusteringOption: React.FC<clusteringOptionProps> = ({ onChange }) => {
   const [option, setOption] = useState<string[]>([]);
   const [k, setK] = useState<number>(0);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setK(Number(value));
-    onChange(option, k);
-  };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    //onSubmit(option);
-  };
+  
+
+  const handleNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    const val = Number(value);
+    if (isNaN(val)) {
+      return;
+    }
+    if (val < 0) {
+      setK(0);
+
+    }
+    if (val > 100) {  
+      setK(100);
+    }
+    setK(Number(value));
+    }; 
+  
+    const handleGenreChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.checked) {
+        setOption([...option, "genres"]);
+      }else{
+        setOption(option.filter((item) => item !== "genres"));
+      }
+      };
+
+    const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.checked) {
+        setOption([...option, "title"]);
+      }else{
+        setOption(option.filter((item) => item !== "title"));
+      }
+    };
+
+    useEffect(() => {
+
+      onChange(option, k);
+    }
+    , [option, k]);
+
+
+
   return (
     <Container>
     <h4>Clustering Options:</h4>
@@ -35,15 +68,7 @@ const ClusteringOption: React.FC<clusteringOptionProps> = ({ onChange }) => {
             id="inlineFormCheck"
             label="Title"
             className="mr-sm-2"
-            onChange={(e) => {
-              if (e.target.checked) {
-                setOption([...option, "title"]);
-              } else {
-                setOption(option.filter((item) => item !== "title"));
-              }
-              onChange(option, k);
-            
-            }}
+            onChange={handleTitleChange}
             />
             <Form.Check
             inline
@@ -51,14 +76,7 @@ const ClusteringOption: React.FC<clusteringOptionProps> = ({ onChange }) => {
             id="inlineFormCheck"
             label="Genre"
             className="mr-sm-2"
-            onChange={(e) => {
-              if (e.target.checked) {
-                setOption([...option, "genres"]);
-              } else {
-                setOption(option.filter((item) => item !== "genres"));
-              }
-              onChange(option, k);
-            }}
+            onChange={handleGenreChange}
             />
             </Col>
         <Row className="justify-content-md-center">
@@ -66,7 +84,7 @@ const ClusteringOption: React.FC<clusteringOptionProps> = ({ onChange }) => {
             type="number"
             required
             placeholder="Enter K number"
-            onChange={handleInputChange}
+            onChange={handleNumberChange }
             />
         </Row>
       </Row>

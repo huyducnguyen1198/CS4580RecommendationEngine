@@ -273,7 +273,7 @@ def getMovieRecByYear(df_rec, yearRef=2020, n=10, random_state=0):
     :return: knn movies to past movies
     '''
     df_rec['yearDif'] = df_rec['year'].apply(lambda x: getYearDif(x, yearRef))
-    df_rec['yearScore'] = 1 - df_rec['yearDif'] / df_rec['yearDif'].max()
+    df_rec['yearScore'] = 1 - abs(df_rec['yearDif'] / df_rec['yearDif'].abs().max())
     return df_rec.sort_values(by='yearScore', ascending=False)[:n]
 
 

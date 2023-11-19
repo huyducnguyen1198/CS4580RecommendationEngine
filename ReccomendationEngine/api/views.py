@@ -92,7 +92,6 @@ def getMovie(request):
             movies = movieEngine.genresimilarity(movies,genres )[:50]
         if year:
             movies = movieEngine.getMovieRecByYear(movies,year )
-
         movies = movies[['title', 'genres' , 'imdbId', 'year']][:10].to_dict(orient='records')
 
         return Response(movies, status=200)

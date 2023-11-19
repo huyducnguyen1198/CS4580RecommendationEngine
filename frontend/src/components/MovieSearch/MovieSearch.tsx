@@ -128,45 +128,15 @@ const MoviePage: React.FC = () => {
     /************************************/
 
     const [sortOption, setSortOption] = React.useState<string[]>([]);
-    /*const handleSortChange = (opt: string, isChecked: boolean) => {
-        if (isChecked) {
-            setSortOption([...sortOption, opt]);
-        } else {
-            setSortOption(sortOption.filter((o) => o !== opt));
-        }
-    }
-    useEffect (() => {
-        const options:(keyof Movie)[] = []
-        if(sortOption.includes("Plot")){
-            options.push("cosine");
-        }
 
-        if(sortOption.includes("title") && sortOption.includes("genres")){
-            options.push("JacCosScore");
-        }else{
-            if(sortOption.includes("Title")){
-                options.push("lavenshtein");
-            }
-            if(sortOption.includes("Genres")){
-                options.push("jaccard");
-            }
-        }
-    
-        if (options.length === 0) {
-            
-            setCompl([...complOrg]);
-            console.log("no sort option");
-            console.log(complOrg);
-            return;
-        }
-        const sorted = sortMovieList([...compl], options)
-        setCompl(sorted);
-
-    }, [sortOption]);*/
     const [compl, setCompl] = React.useState<Movie[]>([]);
 
     const handleSortChange1 = ( weights: WeightsType) => {
-        console.log(weights);
+        if(weights.Genres === 0 && weights.Plot === 0 && weights.Title === 0){
+            setCompl(complOrg);
+            return;
+        }
+
         const updatedMovies = compl.map(movie => ({
             ...movie,
             sortScore: movie.cosine * weights.Plot + movie.lavenshtein * weights.Title + movie.JacCosScore * weights.Genres
@@ -221,11 +191,12 @@ const MoviePage: React.FC = () => {
             const imdb = "tt" + padWithLeadingZeros(mov.imdbId, 7);
             //console.log(imdb);
             /*list of key
+            35445619
                 f451c5dd
                 4daa1e35
                 7cb0f304
             */
-            const response = await fetch(`https://www.omdbapi.com/?i=${imdb}&apikey=f451c5dd`);
+            const response = await fetch(`https://www.omdbapi.com/?i=${imdb}&apikey=35445619`);
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
@@ -253,6 +224,9 @@ const MoviePage: React.FC = () => {
         setLoading(false);
     }, [compl]);
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     // Fetch and display movie details using imdbID
     return (

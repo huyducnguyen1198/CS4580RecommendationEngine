@@ -74,7 +74,12 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
         }, {});
 
         // check the number of selected options after this change and update the weights accordingly
-        if (selectedCount === 1) {
+        if (selectedCount === 0) {
+            // If this is the only selected option
+            Object.keys(newWeights).forEach(key => {
+                newWeights[key as keyof WeightsType] = 0;
+            });
+        }else if (selectedCount === 1) {
             // If this is the only selected option
             Object.keys(newWeights).forEach(key => {
                 if (checkedOpt[key as keyof CheckedOptionsType]) {
@@ -108,7 +113,6 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
   }, [checkedOptions]);
 
   const handleWeightChange = (option: keyof WeightsType, value: number) => {
-    console.log(option, value, Math.min(Math.max(value, 0), 1));
       setCompWeight(prev => ({
           ...prev,
           [option]: Math.min(Math.max(value, 0), 1)
@@ -143,7 +147,9 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
   }, [weights]);
 
   const handleSort = () => {
-      onSortChange(weights);
+        console.log(compWeights)
+
+      onSortChange(compWeights);
   };
 
   return (

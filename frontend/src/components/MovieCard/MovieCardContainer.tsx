@@ -70,12 +70,13 @@ const modifyMovie = async (movie: MovieProps): Promise<Movie> => {
     const imdb = "tt" + padWithLeadingZeros(movie.imdbId, 7);
     //console.log(imdb);
     /*list of key
+      35445619
             f451c5dd
             4daa1e35
             7cb0f304
         */
     const response = await fetch(
-      `https://www.omdbapi.com/?i=${imdb}&apikey=f451c5dd`
+      `https://www.omdbapi.com/?i=${imdb}&apikey=35445619`
     );
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -112,19 +113,6 @@ interface QueryParams {
 }
 
 const getQueryParams = (data: QueryParams) => {
-
-  if (data.imdbList.length === 0|| data.imdbList === undefined)  {
-    console.error("No movie selected");
-    return "";
-  }
-  if(data.options.length === 0 || data.options === undefined) {
-    console.error("No options selected");
-    return "";
-  }
-  if(data.k === 0 || data.k === undefined) {
-    console.error("No k selected");
-    return "";
-  }
 
   const searchParams = new URLSearchParams();
 
@@ -246,36 +234,23 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
   /* Clustering Options */
   /***************************/
   const [k, setK] = useState<number>(0);
-  const [clusterOption, setClusterOption] = useState<string[]>([]);
+  const [clusterOption, setClusterOption] = useState<Array<"title" | "genres">>([]);
   const handleClusterChange = (option: string[], k: number) => {
-    setClusterOption(option);
-    setK(k);
+    const opts:Array<"title" | "genres"> = option as Array<"title" | "genres">;
+
+    if(opts.length === 0){
+      setClusterOption(['genres', 'title']);
+    }else{
+      setClusterOption(opts); 
+    }
+    if(k <= 0) {
+      setK(10);
+    }else{
+      setK(k);
+    }
+  
   }
 
-  useEffect(() => {
-    const fetchMovieList = async () => {
-      if(moviesList.length === 0) return;
-        try {
-            const res = await axios({
-                method: "POST",
-                url: "http://localhost:8000/api/movies/listbyimdbs/",
-                data: { 
-                    imdbList: moviesList.map((movie) => movie.imdbId),
-                    options: clusterOption,
-                    k: k
-                 },
-            });
-            const json = await res.data;
-            console.log(json);
-            setData(json);
-        } catch (error) {
-            console.log(error);
-            throw error;
-        }
-    };
-
-    fetchMovieList();
-}, [option, k]);
 
   /***************************/
   /* Submit movie button */
@@ -285,15 +260,13 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
   const handleSubmitSelectedMovies = () => {
 
     const imdbList = extractImdb(selectedMovie);
-    console.log("IMDBLIST", imdbList);
-    
     //const data = new URLSearchParams({imdbList: imdbList.join(",")}).toString();
-    const data = getQueryParams({imdbList: imdbList, options: [ "genres"], k: 5});
+    const data = getQueryParams({imdbList: imdbList, options: clusterOption, k: k });
+    console.log(data);
     const url = `/movies?${data}`;
 
     window.open(url, "_blank");
 };
-
 
 
     if (loading) {
