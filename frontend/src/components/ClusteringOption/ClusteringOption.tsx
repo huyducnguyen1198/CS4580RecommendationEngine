@@ -53,9 +53,9 @@ const ClusteringOption: React.FC<clusteringOptionProps> = ({ onChange }) => {
             className="mr-sm-2"
             onChange={(e) => {
               if (e.target.checked) {
-                setOption([...option, "genre"]);
+                setOption([...option, "genres"]);
               } else {
-                setOption(option.filter((item) => item !== "genre"));
+                setOption(option.filter((item) => item !== "genres"));
               }
               onChange(option, k);
             }}
