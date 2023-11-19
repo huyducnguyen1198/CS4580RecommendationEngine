@@ -68,6 +68,7 @@ function sortMovieList(movList: Movie[], sortOption: (keyof Movie)[], reverse: b
     return movList.sort(compare);
 }
 
+
 /*******************************/
 /*    MoviePage component       */
 /*******************************/
@@ -82,6 +83,8 @@ const MoviePage: React.FC = () => {
     /*   Fetch movie list by imdbIDList */
     /************************************/
     const [imdbList, setImdbList] = React.useState<string[]>([]);
+    const [kValue, setKValue] = React.useState<number>(10);
+    const [options, setOptions] = React.useState<string[]>([]);
     //const imdbList = getMovieCluster();
     
     const location = useLocation();
@@ -89,13 +92,34 @@ const MoviePage: React.FC = () => {
     useEffect(() => {
 
         const queryParams = new URLSearchParams(location.search);
-        const imdbs = queryParams.get('imdbList');
+        //const imdbs = queryParams.get('imdbList');
     
+        const imdbs = queryParams.get('imdbList')?.split(',');
+        const k = queryParams.get('k');
+        const options = queryParams.get('options')?.split(',');
+        console.log(queryParams);
+        console.log(imdbs);
+        console.log(k);
+        console.log(options);
+
+        
         if(imdbs === undefined || imdbs === null ){
             return;
         }
+        if(k === undefined || k === null ){
+            setKValue(10);
+            return;
+        }
+        if(options === undefined || options === null ){
+            setOptions(['title', 'genres']);
+            return;
+        }
+
+        setImdbList(imdbs);
+        setKValue(Number(k));
+        setOptions(options);
     
-        setImdbList(imdbs.split(','));
+        //setImdbList(imdbs.split(','));
     }, [location]);
     
 
@@ -142,11 +166,13 @@ const MoviePage: React.FC = () => {
     const [compl, setCompl] = React.useState<Movie[]>([]);
 
     const handleSortChange1 = ( weights: WeightsType) => {
+        console.log(weights);
         const updatedMovies = compl.map(movie => ({
             ...movie,
             sortScore: movie.cosine * weights.Plot + movie.lavenshtein * weights.Title + movie.JacCosScore * weights.Genres
         }));
-        const sorted = sortMovieList([...updatedMovies], ["sortScore"], true);
+        const sorted = sortMovieList(updatedMovies, ["sortScore"], true);
+
         setCompl(sorted);
     }
 
@@ -167,8 +193,8 @@ const MoviePage: React.FC = () => {
                     url: "http://localhost:8000/api/movies/listbyimdbs/",
                     data: { 
                         imdbList: imdbList,
-                        options: ['title', 'genres'],
-                        k: 10
+                        options: options,
+                        k: kValue,
                      },
                 });
                 const json = await res.data;

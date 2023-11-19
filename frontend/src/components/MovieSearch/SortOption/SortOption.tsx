@@ -97,7 +97,7 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
         } else if (selectedCount === 3) {
             // If all three options are selected
             Object.keys(newWeights).forEach(key => {
-                newWeights[key as keyof WeightsType] = 0.3;
+                newWeights[key as keyof WeightsType] = 0.33;
             });
         }
         return newWeights;
@@ -108,9 +108,10 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
   }, [checkedOptions]);
 
   const handleWeightChange = (option: keyof WeightsType, value: number) => {
+    console.log(option, value, Math.min(Math.max(value, 0), 1));
       setCompWeight(prev => ({
           ...prev,
-          [option]: Math.min(Math.max(value, 0), 1),
+          [option]: Math.min(Math.max(value, 0), 1)
       }));
       setWeights(prev => ({
         ...prev,
@@ -128,15 +129,15 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
           const otherOption = Object.keys(checkedOptions).find(key => key !== lastModified && checkedOptions[key as keyof CheckedOptionsType]) as keyof WeightsType;
           setCompWeight(prev => ({
               ...prev,
-              [otherOption]: 1 - prev[lastModified],
+              [otherOption]: (1 - prev[lastModified]).toFixed(2),
           }));
       } else if (checkedCount === 3 && lastModified) {
           const remainingOptions = Object.keys(checkedOptions).filter(key => key !== lastModified && checkedOptions[key as keyof CheckedOptionsType]) as (keyof WeightsType)[];
           const remainingWeight = 1 - compWeights[lastModified];
           setCompWeight(prev => ({
               ...prev,
-              [remainingOptions[0]]: remainingWeight / 2,
-              [remainingOptions[1]]: remainingWeight / 2,
+              [remainingOptions[0]]: (remainingWeight / 2).toFixed(2),
+              [remainingOptions[1]]: (remainingWeight / 2).toFixed(2),
           }));
       }
   }, [weights]);
@@ -145,7 +146,6 @@ const SortOption: React.FC<SortOptionProps> = ({ onSortChange }) => {
       onSortChange(weights);
   };
 
-  console.log(checkedOptions, compWeights, weights);
   return (
       <Container>
           <Form>

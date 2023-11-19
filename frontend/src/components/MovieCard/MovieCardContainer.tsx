@@ -75,7 +75,7 @@ const modifyMovie = async (movie: MovieProps): Promise<Movie> => {
             7cb0f304
         */
     const response = await fetch(
-      `https://www.omdbapi.com/?i=${imdb}&apikey=4daa1e35`
+      `https://www.omdbapi.com/?i=${imdb}&apikey=f451c5dd`
     );
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -100,6 +100,41 @@ const modifyMovie = async (movie: MovieProps): Promise<Movie> => {
     throw error;
   }
 };
+
+
+/*******************************/
+/*    Querry                   */
+/*******************************/
+interface QueryParams {
+  imdbList: string[];
+  options: Array<"title" | "genres">;
+  k: number;
+}
+
+const getQueryParams = (data: QueryParams) => {
+
+  if (data.imdbList.length === 0|| data.imdbList === undefined)  {
+    console.error("No movie selected");
+    return "";
+  }
+  if(data.options.length === 0 || data.options === undefined) {
+    console.error("No options selected");
+    return "";
+  }
+  if(data.k === 0 || data.k === undefined) {
+    console.error("No k selected");
+    return "";
+  }
+
+  const searchParams = new URLSearchParams();
+
+  searchParams.append("imdbList", data.imdbList.join(","));
+  searchParams.append("options", data.options.join(","));
+  searchParams.append("k", data.k.toString());
+  
+  const queryString = searchParams.toString();
+  return queryString;
+}
 
 const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
   /***************************/
@@ -252,8 +287,8 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
     const imdbList = extractImdb(selectedMovie);
     console.log("IMDBLIST", imdbList);
     
-    const data = new URLSearchParams({imdbList: imdbList.join(",")}).toString();
-
+    //const data = new URLSearchParams({imdbList: imdbList.join(",")}).toString();
+    const data = getQueryParams({imdbList: imdbList, options: [ "genres"], k: 5});
     const url = `/movies?${data}`;
 
     window.open(url, "_blank");
