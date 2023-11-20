@@ -13,9 +13,13 @@ import MovieGenres from "../filter/GenreFilter";
 import MovieSelected from "../filter/MovieSelected";
 import ClusteringOption from "../ClusteringOption/ClusteringOption";
 import Page from "../filter/pagination";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+
 
 import sendData, { extractImdb } from "./SendData";
 import { useNavigate } from "react-router-dom";
+
 
 interface Movie {
   title: string;
@@ -125,6 +129,13 @@ const getQueryParams = (data: QueryParams) => {
 }
 
 const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
+  /*************************
+   * Modal
+   */
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   /***************************/
   /* Fetch data from backend */
   /***************************/
@@ -258,6 +269,10 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
   const navigate = useNavigate();
 
   const handleSubmitSelectedMovies = () => {
+    if(k <3){
+      handleShow();
+      return
+    }
 
     const imdbList = extractImdb(selectedMovie);
     //const data = new URLSearchParams({imdbList: imdbList.join(",")}).toString();
@@ -277,6 +292,19 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
     return <div>Error: {error}</div>;
   }
   return (
+    <>
+     <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Error!!!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Please enter K more than 2!</Modal.Body>
+        <Modal.Footer>
+          
+          <Button variant="primary" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     <Row>
       <Col md={2}>
         <MovieGenres onGenreChange={handleGenreChange} />
@@ -324,6 +352,7 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
       <MovieSelected movieList={selectedMovie} onRemove={handleRemoveMovie} onSubmit={handleSubmitSelectedMovies}/>
       </Col>
     </Row>
+    </>
   );
 
 };
