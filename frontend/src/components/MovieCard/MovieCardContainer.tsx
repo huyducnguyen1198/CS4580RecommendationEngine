@@ -315,7 +315,7 @@ const MovieCardContainer: React.FC<MovieTitleProps> = ({ searchTitle }) => {
           <Row className="justify-content-center">
             {moviesList.map((movie, index) => (
               <Col
-                md={6}
+                md={4}
                 key={movie.imdbId}
                 className="mb-3 d-flex align-items-stretch"
               >
