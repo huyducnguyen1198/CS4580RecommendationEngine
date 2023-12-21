@@ -1,5 +1,5 @@
 
-# CS4580 Recommendation Engine Project
+# Recommendation Engine Project
 
 ## Overview
 - Full-stack application
